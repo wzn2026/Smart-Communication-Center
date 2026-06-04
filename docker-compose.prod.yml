@@ -1,0 +1,170 @@
+version: '3.9'
+
+# ─── Production Docker Compose ────────────────────────────────────────────────
+# Target: Hetzner VPS behind Cloudflare
+# Domains: app.comm.wasal.sa  (frontend)  api.comm.wasal.sa  (backend + WS)
+#
+# Usage:
+#   cp .env.production.example .env.production   # fill real values
+#   docker compose -f docker-compose.prod.yml build
+#   docker compose -f docker-compose.prod.yml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+x-backend-env: &backend-env
+  env_file: .env.production
+  environment:
+    DJANGO_SETTINGS_MODULE: config.settings.production
+
+services:
+
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: .env.production
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-scc_db}
+      POSTGRES_USER: ${POSTGRES_USER:-scc_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-scc_user} -d ${POSTGRES_DB:-scc_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - internal
+
+  # ── Application ─────────────────────────────────────────────────────────────
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: scc_backend:latest
+    restart: always
+    entrypoint: ["/app/entrypoint.prod.sh"]
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+    <<: *backend-env
+    volumes:
+      - media_files:/app/media
+      - static_files:/app/staticfiles
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - internal
+
+  celery_worker:
+    image: scc_backend:latest
+    restart: always
+    command: >
+      celery -A config.celery worker
+      --loglevel=info
+      --concurrency=2
+      --max-tasks-per-child=500
+    <<: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config.celery inspect ping -d celery@$$HOSTNAME --timeout 5"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    networks:
+      - internal
+
+  # ── Frontend ────────────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: https://api.comm.wasal.sa/api
+        VITE_WS_BASE_URL: wss://api.comm.wasal.sa/ws
+    image: scc_frontend:latest
+    restart: always
+    volumes:
+      - ./nginx/frontend.prod.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal
+
+  # ── Reverse Proxy ───────────────────────────────────────────────────────────
+  #
+  # SSL: Cloudflare Origin Certificate (Full Strict mode).
+  # Place your cert files on the host BEFORE starting nginx:
+  #   /opt/cloudflare/origin.pem   — certificate + chain from Cloudflare dashboard
+  #   /opt/cloudflare/origin.key   — private key (chmod 600, owned by root)
+  #
+  # Port 80  → always redirects to 443.
+  # Port 443 → terminates TLS, proxies to backend or frontend container.
+
+  nginx:
+    image: nginx:1.25-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/cloudflare:/etc/cloudflare:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - internal
+      - external
+
+# ─── Networks ─────────────────────────────────────────────────────────────────
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: bridge
+
+# ─── Volumes ──────────────────────────────────────────────────────────────────
+
+volumes:
+  postgres_data:
+    name: scc_postgres_data
+  redis_data:
+    name: scc_redis_data
+  static_files:
+    name: scc_static_files
+  media_files:
+    name: scc_media_files

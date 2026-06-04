@@ -1,0 +1,110 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: scc_postgres
+    environment:
+      POSTGRES_DB: scc_db
+      POSTGRES_USER: scc_user
+      POSTGRES_PASSWORD: scc_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scc_user -d scc_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: scc_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: scc_backend
+    # Daphne = ASGI server required for WebSocket support (Django Channels).
+    # Runs migrate + seed_data on every start (both are idempotent).
+    command: >
+      sh -c "python manage.py migrate --settings=config.settings.development &&
+             python manage.py seed_data --settings=config.settings.development &&
+             daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-secret-key-change-in-production}
+      DEBUG: "true"
+      DATABASE_URL: postgresql://scc_user:scc_pass@postgres:5432/scc_db
+      REDIS_URL: redis://redis:6379/0
+      CHANNEL_LAYER_REDIS_URL: redis://redis:6379/1
+      WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-mock}
+      DIALOG360_API_KEY: ${DIALOG360_API_KEY:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-webhook-secret}
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-}
+      ENABLE_FAQ_AUTOREPLY: ${ENABLE_FAQ_AUTOREPLY:-true}
+      ENABLE_AI_AUTOREPLY: ${ENABLE_AI_AUTOREPLY:-false}
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: scc_celery
+    command: celery -A config.celery worker --loglevel=info --concurrency=2
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-secret-key-change-in-production}
+      DATABASE_URL: postgresql://scc_user:scc_pass@postgres:5432/scc_db
+      REDIS_URL: redis://redis:6379/0
+      CHANNEL_LAYER_REDIS_URL: redis://redis:6379/1
+      WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-mock}
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-webhook-secret}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    container_name: scc_frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      # Vite proxy reads these at server startup (process.env, not import.meta.env).
+      # "backend" resolves to the backend container via Docker's internal DNS.
+      BACKEND_URL: http://backend:8000
+      BACKEND_WS_URL: ws://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

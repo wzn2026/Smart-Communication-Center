@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.env
+*.sqlite3
+
+# Django
+staticfiles/
+media/
+
+# Node
+node_modules/
+dist/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment files — NEVER commit production secrets
+.env.production
+.env.local
+.env.*.local
+
+# Backup files
+backups/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db

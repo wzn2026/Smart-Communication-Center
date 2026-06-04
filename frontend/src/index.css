@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    direction: rtl;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    /* wasal-inspired light page background */
+    background: linear-gradient(150deg, #F0F5FF 0%, #EEF2FF 100%);
+    background-attachment: fixed;
+    @apply text-neutral-800 min-h-screen;
+  }
+
+  /* scrollbar — light theme */
+  ::-webkit-scrollbar       { width: 5px; }
+  ::-webkit-scrollbar-track { background: #EEF2FF; }
+  ::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.25); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(37,99,235,0.40); }
+}
+
+@layer components {
+
+  /* ── Cards ───────────────────────────────────────────────────── */
+  /* standard white card */
+  .card {
+    @apply bg-white rounded-2xl border border-neutral-200;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* blue-tinted light card */
+  .card-blue {
+    @apply bg-brand-50 rounded-2xl border border-brand-200;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* amber warm card */
+  .card-amber {
+    @apply bg-amber-50 rounded-2xl border border-amber-200;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* teal card */
+  .card-teal {
+    @apply bg-teal-50 rounded-2xl border border-teal-200;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* glass-card alias for backwards compat — now maps to .card */
+  .glass-card       { @apply card; }
+  .glass-card-blue  { @apply card-blue; }
+  .glass-card-amber { @apply card-amber; }
+  .glass-card-teal  { @apply card-teal; }
+
+  /* ── Sidebar glass (stays dark) ──────────────────────────────── */
+  .sidebar-glass {
+    background: linear-gradient(180deg, #0A1628 0%, #112447 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-color: rgba(37,99,235,0.18);
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────── */
+  .btn-primary {
+    background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+    box-shadow: 0 2px 8px rgba(37,99,235,0.30);
+    @apply text-white px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all border border-brand-700/20
+           hover:brightness-110 active:brightness-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-teal {
+    background: linear-gradient(135deg, #0D9488 0%, #0891B2 100%);
+    @apply text-white px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all border border-teal-700/20
+           hover:brightness-110 active:brightness-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-amber {
+    background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+    box-shadow: 0 2px 8px rgba(245,158,11,0.30);
+    @apply text-white px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all border border-amber-700/20
+           hover:brightness-110 active:brightness-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-800
+           border border-neutral-200 px-4 py-2.5 rounded-xl
+           text-sm font-medium transition-all
+           disabled:opacity-40;
+  }
+
+  /* ── Inputs ──────────────────────────────────────────────────── */
+  .input-field {
+    @apply bg-white border border-neutral-200 text-neutral-800 placeholder-neutral-400
+           rounded-xl px-4 py-2.5 w-full
+           focus:outline-none focus:border-brand-400
+           focus:ring-2 focus:ring-brand-500/15
+           transition-all text-sm shadow-sm;
+  }
+
+  /* ── Status badge ────────────────────────────────────────────── */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* ── Numbered badge (wasal-style) ────────────────────────────── */
+  .num-badge {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded-full
+           text-xs font-bold text-white;
+    background: linear-gradient(135deg, #1D4ED8 0%, #0891B2 100%);
+  }
+
+  .num-badge-amber {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded-full
+           text-xs font-bold text-white;
+    background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+  }
+
+  /* ── Section label ───────────────────────────────────────────── */
+  .label-section {
+    @apply text-xs font-bold text-brand-600 tracking-widest uppercase;
+  }
+
+  /* ── Page heading ────────────────────────────────────────────── */
+  .page-title {
+    @apply text-2xl font-bold text-neutral-900 leading-tight;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-neutral-500 mt-0.5;
+  }
+
+  /* ── Feature banner (wasal hero gradient) ────────────────────── */
+  .hero-banner {
+    background: linear-gradient(135deg, #1A3080 0%, #2050B8 45%, #0891B2 100%);
+    @apply rounded-2xl p-6 text-white relative overflow-hidden shadow-card-md;
+  }
+
+  .hero-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── Section row (wasal warm accordion style) ────────────────── */
+  .section-row {
+    @apply bg-amber-50 border border-amber-200 rounded-xl px-5 py-4
+           flex items-center justify-between cursor-pointer
+           hover:border-amber-300 transition-all;
+  }
+
+  /* ── Sidebar nav items (dark sidebar — keep white text) ──────── */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm
+           transition-all text-white/55 hover:text-white;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.07);
+  }
+
+  .nav-item-active {
+    background: linear-gradient(135deg, rgba(37,99,235,0.22) 0%, rgba(8,145,178,0.14) 100%);
+    @apply text-brand-200 font-semibold;
+    border: 1px solid rgba(37,99,235,0.30);
+  }
+
+  /* ── Divider ─────────────────────────────────────────────────── */
+  .divider {
+    @apply border-t border-neutral-200 my-4;
+  }
+}
+
+@layer utilities {
+  /* gradient text */
+  .text-brand-gradient {
+    background: linear-gradient(135deg, #2563EB 0%, #0891B2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-amber-gradient {
+    background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
