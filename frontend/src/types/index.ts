@@ -1,3 +1,32 @@
+export type MemberRole = 'owner' | 'admin' | 'agent' | 'viewer'
+
+export interface UserInfo {
+  id: number
+  username: string
+  email: string
+  first_name: string
+  last_name: string
+  is_staff: boolean
+  is_active: boolean
+  date_joined: string
+}
+
+export interface TenantMembership {
+  id: number
+  tenant: string
+  user: number
+  username: string
+  full_name: string
+  role: MemberRole
+  is_active: boolean
+}
+
+export interface MeResponse {
+  type: 'user'
+  user: UserInfo
+  tenants: { tenant: Tenant; role: MemberRole }[]
+}
+
 export interface Tenant {
   id: string
   name: string
@@ -16,7 +45,9 @@ export interface WhatsAppNumber {
   provider: 'mock' | '360dialog' | 'whatsapp_cloud'
   display_name: string
   phone_number: string
+  provider_phone_id: string
   status: 'active' | 'inactive' | 'pending'
+  has_credentials: boolean
   created_at: string
 }
 
@@ -94,6 +125,45 @@ export interface QuickReply {
   body: string
   category: string
   is_active: boolean
+}
+
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  slug: string
+  description: string
+  price_monthly: string
+  price_yearly: string
+  currency: string
+  max_whatsapp_numbers: number | null
+  max_agents: number | null
+  max_messages_per_month: number | null
+  features: string[]
+  is_active: boolean
+  is_featured: boolean
+  sort_order: number
+  created_at: string
+  subscriber_count: number
+}
+
+export interface Subscription {
+  id: string
+  tenant: string
+  tenant_name: string
+  plan: string
+  plan_name: string
+  plan_slug: string
+  plan_price_monthly: string
+  status: 'trial' | 'active' | 'expired' | 'cancelled' | 'past_due'
+  billing_cycle: 'monthly' | 'yearly'
+  start_date: string
+  end_date: string | null
+  trial_ends_at: string | null
+  auto_renew: boolean
+  notes: string
+  is_currently_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface PaginatedResponse<T> {

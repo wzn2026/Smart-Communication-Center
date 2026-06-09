@@ -1,9 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TenantViewSet, MeView, RevokeApiKeyView
+from .views import TenantViewSet, UserViewSet, SubscriptionPlanViewSet, SubscriptionViewSet, MeView, RevokeApiKeyView
 
 router = DefaultRouter()
 router.register('tenants', TenantViewSet, basename='tenant')
+router.register('users', UserViewSet, basename='user')
+router.register('subscription-plans', SubscriptionPlanViewSet, basename='subscription-plan')
+router.register('subscriptions', SubscriptionViewSet, basename='subscription')
 
 urlpatterns = [
     path('', include(router.urls)),

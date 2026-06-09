@@ -105,13 +105,29 @@ class ExternalEventView(APIView):
 
 class WhatsAppWebhookView(APIView):
     """
-    POST /api/webhooks/whatsapp/{provider}/
+    GET  /api/webhooks/whatsapp/{provider}/ — Meta challenge verification
+    POST /api/webhooks/whatsapp/{provider}/ — Inbound messages & status updates
 
     Security: validates HMAC-SHA256 signature when WEBHOOK_SECRET is configured.
     Processing: stores WebhookEvent and dispatches async Celery task immediately.
     Idempotency: de-duplicates on (provider, deduplication_key) before enqueuing.
     """
     permission_classes = [AllowAny]
+
+    def get(self, request, provider):
+        """Handle Meta webhook verification challenge (GET request)."""
+        if provider != 'whatsapp_cloud':
+            return Response({'error': 'Not supported'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from apps.providers.whatsapp_cloud import WhatsAppCloudProvider
+        from django.conf import settings as dj_settings
+
+        verify_token = getattr(dj_settings, 'WEBHOOK_SECRET', '') or 'dev-webhook-secret'
+        challenge = WhatsAppCloudProvider.verify_challenge(request.query_params, verify_token)
+        if challenge:
+            from django.http import HttpResponse
+            return HttpResponse(challenge, content_type='text/plain')
+        return Response({'error': 'Verification failed'}, status=status.HTTP_403_FORBIDDEN)
     throttle_classes = [WebhookThrottle]
 
     def post(self, request, provider):

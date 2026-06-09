@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from apps.tenants.models import Tenant, TenantMembership, ApiKey
+from apps.tenants.models import Tenant, TenantMembership, ApiKey, SubscriptionPlan, Subscription
+from django.utils import timezone
 from apps.channels.models import WhatsAppNumber, Contact
 from apps.conversations.models import Conversation, Message
 from apps.knowledge.models import KnowledgeBase, KnowledgeItem, QuickReplyTemplate
@@ -208,6 +209,66 @@ class Command(BaseCommand):
             )
 
         self.stdout.write('  ✓ Sample conversations created')
+
+        # ── Subscription Plans ─────────────────────────────────────────────────
+        plans_data = [
+            {
+                'slug': 'free', 'name': 'مجاني', 'sort_order': 0,
+                'description': 'ابدأ مجاناً بدون بطاقة ائتمانية',
+                'price_monthly': 0, 'price_yearly': 0,
+                'max_whatsapp_numbers': 1, 'max_agents': 2, 'max_messages_per_month': 500,
+                'is_featured': False, 'is_active': True,
+                'features': ['رقم واتساب واحد', 'وكيلان', '500 رسالة/شهر', 'قاعدة معرفة أساسية', 'دعم عبر البريد'],
+            },
+            {
+                'slug': 'starter', 'name': 'ستارتر', 'sort_order': 1,
+                'description': 'مثالي للشركات الصغيرة والناشئة',
+                'price_monthly': 99, 'price_yearly': 990,
+                'max_whatsapp_numbers': 3, 'max_agents': 5, 'max_messages_per_month': 5000,
+                'is_featured': False, 'is_active': True,
+                'features': ['3 أرقام واتساب', '5 وكلاء', '5,000 رسالة/شهر', 'ردود سريعة غير محدودة', 'تقارير أساسية', 'دعم عبر الواتساب'],
+            },
+            {
+                'slug': 'pro', 'name': 'احترافي', 'sort_order': 2,
+                'description': 'للشركات المتوسطة التي تحتاج أداءً عالياً',
+                'price_monthly': 299, 'price_yearly': 2990,
+                'max_whatsapp_numbers': 10, 'max_agents': 20, 'max_messages_per_month': 30000,
+                'is_featured': True, 'is_active': True,
+                'features': ['10 أرقام واتساب', '20 وكيل', '30,000 رسالة/شهر', 'ذكاء اصطناعي متقدم', 'تقارير تفصيلية', 'دعم ذو أولوية', 'API مفتوح'],
+            },
+            {
+                'slug': 'enterprise', 'name': 'مؤسسي', 'sort_order': 3,
+                'description': 'حلول مخصصة للمؤسسات الكبرى',
+                'price_monthly': 999, 'price_yearly': 9990,
+                'max_whatsapp_numbers': None, 'max_agents': None, 'max_messages_per_month': None,
+                'is_featured': False, 'is_active': True,
+                'features': ['أرقام واتساب غير محدودة', 'وكلاء غير محدودون', 'رسائل غير محدودة', 'مدير حساب مخصص', 'SLA مضمون 99.9%', 'تكامل مخصص', 'تدريب الفريق'],
+            },
+        ]
+        for p in plans_data:
+            SubscriptionPlan.objects.get_or_create(slug=p['slug'], defaults=p)
+        self.stdout.write('  ✓ Subscription plans created')
+
+        # ── Assign subscriptions to seed tenants ───────────────────────────────
+        enterprise_plan = SubscriptionPlan.objects.get(slug='enterprise')
+        starter_plan = SubscriptionPlan.objects.get(slug='starter')
+        today = timezone.now().date()
+
+        if not nedaa.subscriptions.exists():
+            Subscription.objects.create(
+                tenant=nedaa, plan=enterprise_plan, status='active',
+                billing_cycle='yearly', start_date=today,
+                end_date=today.replace(year=today.year + 1), auto_renew=True,
+            )
+        if not fund.subscriptions.exists():
+            Subscription.objects.create(
+                tenant=fund, plan=starter_plan, status='trial',
+                billing_cycle='monthly', start_date=today,
+                trial_ends_at=today.replace(month=today.month + 1) if today.month < 12 else today.replace(year=today.year + 1, month=1),
+                auto_renew=False,
+            )
+        self.stdout.write('  ✓ Sample subscriptions created')
+
         self.stdout.write(self.style.SUCCESS('\n✅ Seed complete!'))
         self.stdout.write('  Login: admin / admin123')
         self.stdout.write('  Login: agent1 / agent123')

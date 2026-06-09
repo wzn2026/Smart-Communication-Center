@@ -149,6 +149,72 @@ class TenantSettings(models.Model):
         return obj
 
 
+class SubscriptionPlan(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True, max_length=50)
+    description = models.TextField(blank=True)
+    price_monthly = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    price_yearly = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    currency = models.CharField(max_length=10, default='SAR')
+    max_whatsapp_numbers = models.IntegerField(null=True, blank=True)
+    max_agents = models.IntegerField(null=True, blank=True)
+    max_messages_per_month = models.IntegerField(null=True, blank=True)
+    features = models.JSONField(default=list)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['sort_order', 'price_monthly']
+
+    def __str__(self):
+        return self.name
+
+
+class Subscription(models.Model):
+    STATUS_CHOICES = [
+        ('trial',    'تجريبي'),
+        ('active',   'نشط'),
+        ('expired',  'منتهي'),
+        ('cancelled','ملغي'),
+        ('past_due', 'متأخر السداد'),
+    ]
+    BILLING_CYCLE = [
+        ('monthly', 'شهري'),
+        ('yearly',  'سنوي'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='subscriptions')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT, related_name='subscriptions')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='trial')
+    billing_cycle = models.CharField(max_length=10, choices=BILLING_CYCLE, default='monthly')
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    trial_ends_at = models.DateField(null=True, blank=True)
+    auto_renew = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.tenant.name} — {self.plan.name} ({self.status})"
+
+    @property
+    def is_currently_active(self):
+        today = timezone.now().date()
+        if self.status not in ('active', 'trial'):
+            return False
+        if self.end_date and today > self.end_date:
+            return False
+        return True
+
+
 # Auto-create settings when a new tenant is created
 from django.db.models.signals import post_save
 from django.dispatch import receiver

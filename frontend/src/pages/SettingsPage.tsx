@@ -197,7 +197,7 @@ function TenantSettingsSection({ tenantId }: { tenantId: string }) {
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-settings', tenantId],
-    queryFn: () => api.get(`/tenants/${tenantId}/settings/`),
+    queryFn: () => api.get(`/tenants/${tenantId}/tenant-settings/`),
     enabled: !!tenantId,
   })
 
@@ -210,7 +210,7 @@ function TenantSettingsSection({ tenantId }: { tenantId: string }) {
 
   const updateMutation = useMutation({
     mutationFn: (values: Record<string, any>) =>
-      api.patch(`/tenants/${tenantId}/settings/`, values),
+      api.patch(`/tenants/${tenantId}/tenant-settings/`, values),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-settings', tenantId] })
       setSaved(true)
@@ -396,9 +396,7 @@ export function SettingsPage() {
     queryFn: getMe,
   })
 
-  const tenantId = meData?.data?.tenants?.[0]?.tenant?.id
-    || meData?.data?.tenant?.id
-    || null
+  const tenantId = meData?.data?.tenants?.[0]?.tenant?.id ?? null
 
   return (
     <div className="p-8 space-y-6 max-w-3xl">

@@ -160,6 +160,19 @@
            hover:border-amber-300 transition-all;
   }
 
+  /* ── Form inputs ─────────────────────────────────────────────── */
+  .form-input {
+    @apply w-full px-3 py-2 rounded-lg text-sm text-white outline-none transition-colors;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .form-input:focus {
+    border-color: rgba(37,99,235,0.6);
+  }
+  .form-input option {
+    background: #1a2540;
+  }
+
   /* ── Sidebar nav items (dark sidebar — keep white text) ──────── */
   .nav-item {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm

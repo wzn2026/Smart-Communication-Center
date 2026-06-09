@@ -1,24 +1,34 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   MessageSquare, BookOpen, Zap, Settings, LayoutDashboard,
-  Building2, Phone, LogOut,
+  Building2, Phone, LogOut, UsersRound, Crown, CreditCard,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuthStore } from '../store/authStore'
 
-const navItems = [
-  { to: '/dashboard',        icon: LayoutDashboard, label: 'لوحة التحكم' },
-  { to: '/inbox',            icon: MessageSquare,   label: 'صندوق الوارد' },
-  { to: '/knowledge',        icon: BookOpen,        label: 'قاعدة المعرفة' },
-  { to: '/quick-replies',    icon: Zap,             label: 'الردود السريعة' },
-  { to: '/whatsapp-numbers', icon: Phone,           label: 'أرقام واتساب' },
-  { to: '/tenants',          icon: Building2,       label: 'المستأجرون' },
-  { to: '/settings',         icon: Settings,        label: 'الإعدادات' },
+const adminNavItems = [
+  { to: '/whatsapp-numbers', icon: Phone,        label: 'أرقام واتساب' },
+  { to: '/tenants',          icon: Building2,    label: 'المستأجرون' },
+  { to: '/team',             icon: UsersRound,   label: 'المستخدمون والأعضاء' },
+  { to: '/subscriptions',    icon: Crown,        label: 'الاشتراكات' },
+  { to: '/settings',         icon: Settings,     label: 'الإعدادات' },
 ]
 
+const mainNavExtra = [
+  { to: '/pricing', icon: CreditCard, label: 'الأسعار والباقات' },
+]
+
+const roleLabels: Record<string, string> = {
+  owner:  'مالك',
+  admin:  'مدير',
+  agent:  'وكيل',
+  viewer: 'مشاهد',
+}
+
 export function Layout() {
-  const logout = useAuthStore((s) => s.logout)
+  const { logout, user, currentTenant, currentRole, isAdmin } = useAuthStore()
   const navigate = useNavigate()
+  const admin = isAdmin()
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -50,14 +60,15 @@ export function Layout() {
           <p className="text-white/25 text-[10px] font-bold tracking-widest uppercase px-3 mb-3">
             القائمة الرئيسية
           </p>
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                clsx('nav-item', isActive && 'nav-item-active')
-              }
-            >
+
+          {[
+            { to: '/dashboard',     icon: LayoutDashboard, label: 'لوحة التحكم' },
+            { to: '/inbox',         icon: MessageSquare,   label: 'صندوق الوارد' },
+            { to: '/knowledge',     icon: BookOpen,        label: 'قاعدة المعرفة' },
+            { to: '/quick-replies', icon: Zap,             label: 'الردود السريعة' },
+            ...mainNavExtra,
+          ].map(({ to, icon: Icon, label }) => (
+            <NavLink key={to} to={to} className={({ isActive }) => clsx('nav-item', isActive && 'nav-item-active')}>
               {({ isActive }) => (
                 <>
                   <Icon size={16} style={isActive ? { color: '#22D3EE' } : { opacity: 0.45 }} />
@@ -66,10 +77,44 @@ export function Layout() {
               )}
             </NavLink>
           ))}
+
+          {admin && (
+            <>
+              <p className="text-white/25 text-[10px] font-bold tracking-widest uppercase px-3 mt-4 mb-3">
+                الإدارة
+              </p>
+              {adminNavItems.map(({ to, icon: Icon, label }) => (
+                <NavLink key={to} to={to} className={({ isActive }) => clsx('nav-item', isActive && 'nav-item-active')}>
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={16} style={isActive ? { color: '#22D3EE' } : { opacity: 0.45 }} />
+                      {label}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </>
+          )}
         </nav>
 
-        {/* Logout */}
+        {/* User info + Logout */}
         <div className="px-3 pb-4" style={{ borderTop: '1px solid rgba(37,99,235,0.12)', paddingTop: '12px' }}>
+          {user && (
+            <div className="px-3 py-2 mb-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <p className="text-white text-xs font-semibold truncate">{user.username}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {currentTenant && (
+                  <p className="text-white/40 text-[11px] truncate flex-1">{currentTenant.name}</p>
+                )}
+                {currentRole && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                    style={{ background: 'rgba(34,211,238,0.15)', color: '#22D3EE' }}>
+                    {roleLabels[currentRole] ?? currentRole}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
           <button
             onClick={() => { logout(); navigate('/login') }}
             className="nav-item w-full hover:!text-red-400"
