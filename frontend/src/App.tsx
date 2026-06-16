@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useAuthStore } from './store/authStore'
 import { Layout } from './components/Layout'
 import { LoginPage } from './pages/LoginPage'
+import { LandingPage } from './pages/LandingPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { InboxPage } from './pages/InboxPage'
 import { KnowledgePage } from './pages/KnowledgePage'
@@ -13,7 +14,7 @@ import { SubscriptionsPage } from './pages/SubscriptionsPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -27,25 +28,22 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Public */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="inbox" element={<InboxPage />} />
-        <Route path="knowledge" element={<KnowledgePage />} />
-        <Route path="quick-replies" element={<QuickRepliesPage />} />
-        <Route path="tenants" element={<AdminRoute><TenantsPage /></AdminRoute>} />
-        <Route path="subscriptions" element={<AdminRoute><SubscriptionsPage /></AdminRoute>} />
-        <Route path="settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
+
+      {/* Protected — pathless layout wrapper */}
+      <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
+        <Route path="/dashboard"     element={<DashboardPage />} />
+        <Route path="/inbox"         element={<InboxPage />} />
+        <Route path="/knowledge"     element={<KnowledgePage />} />
+        <Route path="/quick-replies" element={<QuickRepliesPage />} />
+        <Route path="/tenants"       element={<AdminRoute><TenantsPage /></AdminRoute>} />
+        <Route path="/subscriptions" element={<AdminRoute><SubscriptionsPage /></AdminRoute>} />
+        <Route path="/settings"      element={<AdminRoute><SettingsPage /></AdminRoute>} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
