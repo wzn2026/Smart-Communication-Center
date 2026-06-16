@@ -91,8 +91,8 @@ function PlansTab() {
   function buildPayload() {
     return {
       ...form,
-      price_monthly: parseFloat(form.price_monthly) || 0,
-      price_yearly:  parseFloat(form.price_yearly)  || 0,
+      price_monthly: String(parseFloat(form.price_monthly) || 0),
+      price_yearly:  String(parseFloat(form.price_yearly)  || 0),
       max_whatsapp_numbers:   form.max_whatsapp_numbers   === '' ? null : parseInt(form.max_whatsapp_numbers),
       max_agents:             form.max_agents             === '' ? null : parseInt(form.max_agents),
       max_messages_per_month: form.max_messages_per_month === '' ? null : parseInt(form.max_messages_per_month),
@@ -384,6 +384,8 @@ function SubscriptionsTab() {
     e.preventDefault(); setSaving(true); setError('')
     const payload = {
       ...form,
+      status:         form.status as Subscription['status'],
+      billing_cycle:  form.billing_cycle as Subscription['billing_cycle'],
       end_date:       form.end_date       || null,
       trial_ends_at:  form.trial_ends_at  || null,
     }
@@ -513,11 +515,11 @@ function SubscriptionsTab() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <MF label="المستأجر" required>
+                <MF label="المشترك" required>
                   <div className="relative">
                     <select value={form.tenant} required onChange={e => setForm(f => ({ ...f, tenant: e.target.value }))}
                       className="input-field appearance-none pr-8" disabled={!!editTarget}>
-                      <option value="">-- اختر مستأجراً --</option>
+                      <option value="">-- اختر مشتركاً --</option>
                       {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                     <ChevronDown size={13} className="absolute left-3 top-3 text-neutral-400 pointer-events-none" />
@@ -614,7 +616,7 @@ function SubscriptionsTab() {
 
 const tabs = [
   { id: 'plans',         label: 'الباقات',              icon: Crown },
-  { id: 'subscriptions', label: 'اشتراكات المستأجرين',  icon: Building2 },
+  { id: 'subscriptions', label: 'اشتراكات المشتركين',  icon: Building2 },
 ]
 
 export function SubscriptionsPage() {
@@ -629,7 +631,7 @@ export function SubscriptionsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-neutral-900">إدارة الاشتراكات</h1>
-            <p className="text-sm text-neutral-500 mt-0.5">الباقات المتاحة واشتراكات المستأجرين</p>
+            <p className="text-sm text-neutral-500 mt-0.5">الباقات المتاحة واشتراكات المشتركين</p>
           </div>
           <button onClick={() => { qc.invalidateQueries({ queryKey: ['subscription-plans'] }); qc.invalidateQueries({ queryKey: ['subscriptions'] }); qc.invalidateQueries({ queryKey: ['subscription-stats'] }) }}
             className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-brand-600 bg-white hover:bg-brand-50 border border-neutral-200 transition-all shadow-card">

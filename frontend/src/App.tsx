@@ -7,12 +7,9 @@ import { DashboardPage } from './pages/DashboardPage'
 import { InboxPage } from './pages/InboxPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { QuickRepliesPage } from './pages/QuickRepliesPage'
-import { WhatsAppNumbersPage } from './pages/WhatsAppNumbersPage'
 import { TenantsPage } from './pages/TenantsPage'
 import { SettingsPage } from './pages/SettingsPage'
-import { TeamPage } from './pages/TeamPage'
 import { SubscriptionsPage } from './pages/SubscriptionsPage'
-import { PricingPage } from './pages/PricingPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -44,11 +41,8 @@ export default function App() {
         <Route path="inbox" element={<InboxPage />} />
         <Route path="knowledge" element={<KnowledgePage />} />
         <Route path="quick-replies" element={<QuickRepliesPage />} />
-        <Route path="whatsapp-numbers" element={<AdminRoute><WhatsAppNumbersPage /></AdminRoute>} />
         <Route path="tenants" element={<AdminRoute><TenantsPage /></AdminRoute>} />
-        <Route path="team" element={<AdminRoute><TeamPage /></AdminRoute>} />
         <Route path="subscriptions" element={<AdminRoute><SubscriptionsPage /></AdminRoute>} />
-        <Route path="pricing" element={<PricingPage />} />
         <Route path="settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,21 +1,15 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   MessageSquare, BookOpen, Zap, Settings, LayoutDashboard,
-  Building2, Phone, LogOut, UsersRound, Crown, CreditCard,
+  Building2, LogOut, Crown,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuthStore } from '../store/authStore'
 
 const adminNavItems = [
-  { to: '/whatsapp-numbers', icon: Phone,        label: 'أرقام واتساب' },
-  { to: '/tenants',          icon: Building2,    label: 'المستأجرون' },
-  { to: '/team',             icon: UsersRound,   label: 'المستخدمون والأعضاء' },
-  { to: '/subscriptions',    icon: Crown,        label: 'الاشتراكات' },
-  { to: '/settings',         icon: Settings,     label: 'الإعدادات' },
-]
-
-const mainNavExtra = [
-  { to: '/pricing', icon: CreditCard, label: 'الأسعار والباقات' },
+  { to: '/tenants',       icon: Building2, label: 'المشتركون والأعضاء' },
+  { to: '/subscriptions', icon: Crown,     label: 'الاشتراكات' },
+  { to: '/settings',      icon: Settings,  label: 'الإعدادات' },
 ]
 
 const roleLabels: Record<string, string> = {
@@ -65,8 +59,7 @@ export function Layout() {
             { to: '/dashboard',     icon: LayoutDashboard, label: 'لوحة التحكم' },
             { to: '/inbox',         icon: MessageSquare,   label: 'صندوق الوارد' },
             { to: '/knowledge',     icon: BookOpen,        label: 'قاعدة المعرفة' },
-            { to: '/quick-replies', icon: Zap,             label: 'الردود السريعة' },
-            ...mainNavExtra,
+            { to: '/quick-replies', icon: Zap, label: 'الردود السريعة' },
           ].map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} className={({ isActive }) => clsx('nav-item', isActive && 'nav-item-active')}>
               {({ isActive }) => (

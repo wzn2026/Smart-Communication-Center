@@ -25,8 +25,8 @@ export const deleteUser = (id: number) => api.delete(`/users/${id}/`)
 export const setUserPassword = (id: number, password: string) => api.post(`/users/${id}/set-password/`, { password })
 
 // WhatsApp Numbers
-export const getWhatsAppNumbers = () =>
-  api.get<PaginatedResponse<WhatsAppNumber>>('/whatsapp-numbers/')
+export const getWhatsAppNumbers = (params?: Record<string, string>) =>
+  api.get<PaginatedResponse<WhatsAppNumber>>('/whatsapp-numbers/', { params })
 
 export const createWhatsAppNumber = (data: Record<string, string>) =>
   api.post('/whatsapp-numbers/', data)
