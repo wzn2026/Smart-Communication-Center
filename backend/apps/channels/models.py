@@ -8,6 +8,8 @@ class WhatsAppNumber(models.Model):
         ('mock', 'Mock (Dev)'),
         ('360dialog', '360dialog'),
         ('whatsapp_cloud', 'WhatsApp Cloud API'),
+        ('green_api', 'Green API'),
+        ('waha', 'WAHA (Self-hosted)'),
     ]
     STATUS = [('active', 'Active'), ('inactive', 'Inactive'), ('pending', 'Pending')]
 

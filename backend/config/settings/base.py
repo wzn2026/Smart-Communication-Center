@@ -178,7 +178,16 @@ SPECTACULAR_SETTINGS = {
 # Provider & feature flags
 WHATSAPP_PROVIDER = env('WHATSAPP_PROVIDER', default='mock')
 DIALOG360_API_KEY = env('DIALOG360_API_KEY', default='')
-WEBHOOK_SECRET = env('WEBHOOK_SECRET', default='')
+WEBHOOK_SECRET    = env('WEBHOOK_SECRET', default='')
+
+# Green API
+GREEN_API_INSTANCE = env('GREEN_API_INSTANCE', default='')
+GREEN_API_TOKEN    = env('GREEN_API_TOKEN',    default='')
+
+# WAHA (self-hosted)
+WAHA_URL     = env('WAHA_URL',     default='http://scc_waha:3000')
+WAHA_SESSION = env('WAHA_SESSION', default='default')
+WAHA_API_KEY = env('WAHA_API_KEY', default='')
 ENABLE_FAQ_AUTOREPLY = env.bool('ENABLE_FAQ_AUTOREPLY', default=True)
 ENABLE_AI_AUTOREPLY = env.bool('ENABLE_AI_AUTOREPLY', default=False)
 

@@ -38,6 +38,13 @@ class BaseWhatsAppProvider(ABC):
     ) -> Dict[str, Any]:
         """Send a template message."""
 
+    def send_image_message(
+        self, to: str, body: str, from_number: str,
+        image_b64: str, filename: str = 'image.jpg', mimetype: str = 'image/jpeg',
+    ) -> Dict[str, Any]:
+        """Send image with caption. Falls back to text if provider doesn't support images."""
+        return self.send_text_message(to=to, body=body, from_number=from_number)
+
     @abstractmethod
     def parse_inbound_webhook(self, payload: Dict[str, Any]) -> Optional[InboundMessage]:
         """Parse raw webhook payload into InboundMessage, or None if not applicable."""

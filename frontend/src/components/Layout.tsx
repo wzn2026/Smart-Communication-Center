@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   MessageSquare, BookOpen, Zap, Settings, LayoutDashboard,
-  Building2, LogOut, Crown,
+  Building2, LogOut, Crown, Send,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuthStore } from '../store/authStore'
@@ -59,7 +59,8 @@ export function Layout() {
             { to: '/dashboard',     icon: LayoutDashboard, label: 'لوحة التحكم' },
             { to: '/inbox',         icon: MessageSquare,   label: 'صندوق الوارد' },
             { to: '/knowledge',     icon: BookOpen,        label: 'قاعدة المعرفة' },
-            { to: '/quick-replies', icon: Zap, label: 'الردود السريعة' },
+            { to: '/quick-replies', icon: Zap,            label: 'الردود السريعة' },
+            { to: '/broadcast',    icon: Send,           label: 'الإرسال الجماعي' },
           ].map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} className={({ isActive }) => clsx('nav-item', isActive && 'nav-item-active')}>
               {({ isActive }) => (

@@ -11,6 +11,7 @@ import { QuickRepliesPage } from './pages/QuickRepliesPage'
 import { TenantsPage } from './pages/TenantsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SubscriptionsPage } from './pages/SubscriptionsPage'
+import { BroadcastPage } from './pages/BroadcastPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/inbox"         element={<InboxPage />} />
         <Route path="/knowledge"     element={<KnowledgePage />} />
         <Route path="/quick-replies" element={<QuickRepliesPage />} />
+        <Route path="/broadcast"    element={<BroadcastPage />} />
         <Route path="/tenants"       element={<AdminRoute><TenantsPage /></AdminRoute>} />
         <Route path="/subscriptions" element={<AdminRoute><SubscriptionsPage /></AdminRoute>} />
         <Route path="/settings"      element={<AdminRoute><SettingsPage /></AdminRoute>} />
